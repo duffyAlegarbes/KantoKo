@@ -1,0 +1,25 @@
+﻿@inherits LayoutComponentBase
+
+<div class="min-h-screen flex flex-col bg-kanto-cream-100 font-sans selection:bg-kanto-orange-500 selection:text-white">
+    <!-- 1. Top Announcement Bar -->
+    <TopAnnouncementBar />
+
+    <!-- 2. Sticky Header Navbar -->
+    <HeaderNav />
+
+    <!-- 3. Page Body -->
+    <main class="flex-grow">
+        @Body
+    </main>
+
+    <!-- 4. Suki Club Newsletter Strip -->
+    <NewsletterBanner />
+
+    <!-- 5. Multi-column Neighborhood Footer -->
+    <FooterSection />
+
+    <!-- 6. Interactive Drawers & Overlays -->
+    <CartDrawer />
+    <CheckoutModal />
+    <OrderTrackerModal />
+</div>
