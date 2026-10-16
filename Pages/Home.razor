@@ -1,0 +1,27 @@
+﻿@page "/"
+
+<PageTitle>KantoCart - Street Food at Sari-Sari Marketplace</PageTitle>
+
+<!-- Hero Section (From Phase 2) -->
+<HeroSection />
+
+<!-- 4-Pillar Value Props Strip (From Phase 2) -->
+<ValuePropsBar />
+
+<!-- Category Explorer Showcase -->
+<CategoryShowcase OnCategorySelected="HandleCategorySelected" />
+
+<!-- Merienda Rush Live Countdown Deal (Deal of the Day) -->
+<DealOfTheDaySection />
+
+<!-- 4-Column Product Grid -->
+<FeaturedProductsGrid @ref="productsGrid" />
+
+@code {
+    private FeaturedProductsGrid? productsGrid;
+
+    private void HandleCategorySelected(ProductCategory? category)
+    {
+        productsGrid?.FilterByCategory(category);
+    }
+}

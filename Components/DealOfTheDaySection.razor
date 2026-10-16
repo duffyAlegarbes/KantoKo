@@ -1,0 +1,202 @@
+@inject IDealService DealService
+@inject CartStateService CartState
+@implements IDisposable
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="sulit-deals">
+    @if (CurrentDeal != null)
+    {
+        <div class="bg-gradient-to-br from-kanto-cream-50 via-white to-kanto-cream-200 border border-kanto-cream-300/70 rounded-3xl p-6 sm:p-10 shadow-soft-card">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- Left Side: Deal Urgency, Headline, & CTA -->
+                <div class="lg:col-span-6 space-y-4">
+                    <span class="text-xs font-black uppercase tracking-widest text-kanto-orange-500 block">
+                        DEAL OF THE DAY • MERIENDA RUSH
+                    </span>
+
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-kanto-charcoal tracking-tight leading-tight">
+                        Tikman Bago <br class="hidden sm:inline" />
+                        <span class="text-kanto-green-900">Maubos ang Salang!</span>
+                    </h2>
+
+                    <p class="text-sm sm:text-base text-kanto-muted leading-relaxed max-w-md">
+                        @CurrentDeal.Description
+                    </p>
+
+                    <!-- Stock Counter Bar -->
+                    <div class="pt-2">
+                        <div class="flex items-center justify-between text-xs font-bold mb-1.5">
+                            <span class="text-kanto-orange-600">May natitira na lang na @CurrentDeal.AvailableStock set!</span>
+                            <span class="text-kanto-muted">@CurrentDeal.TotalStock available</span>
+                        </div>
+                        <div class="w-full bg-kanto-cream-300 h-2.5 rounded-full overflow-hidden">
+                            <div class="bg-kanto-orange-500 h-full rounded-full transition-all duration-500" 
+                                 style="width: @((CurrentDeal.AvailableStock / (double)CurrentDeal.TotalStock) * 100)%"></div>
+                        </div>
+                    </div>
+
+                    <!-- CTA Action Button -->
+                    <div class="pt-2">
+                        <button @onclick="AddDealToBasket" 
+                                class="inline-flex items-center gap-2 bg-kanto-orange-500 hover:bg-kanto-orange-600 text-white font-bold text-sm px-6 py-3.5 rounded-xl shadow-md shadow-kanto-orange-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                            <span>ORDER THE DEAL</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Side: Product Visual, Pricing & Real-Time Countdown Clocks -->
+                <div class="lg:col-span-6 bg-white p-6 sm:p-8 rounded-2xl border border-kanto-cream-200/90 shadow-sm flex flex-col md:flex-row items-center gap-6">
+                    
+                    <!-- Food Picture with Glow -->
+                    <div class="w-full md:w-1/2 aspect-square rounded-xl overflow-hidden bg-kanto-cream-100 relative shrink-0 shadow-inner">
+                        <img src="@CurrentDeal.ImageUrl" 
+                             alt="@CurrentDeal.Title" 
+                             class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300" />
+                        <span class="absolute top-3 left-3 bg-kanto-green-900 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wide">
+                            40% OFF
+                        </span>
+                    </div>
+
+                    <!-- Details & Live Countdown -->
+                    <div class="w-full md:w-1/2 space-y-3 text-left">
+                        <span class="text-xs font-semibold text-kanto-muted block">Combo Barkada Set</span>
+                        <h3 class="text-lg font-bold text-kanto-charcoal leading-snug">
+                            @CurrentDeal.Title
+                        </h3>
+
+                        <!-- Price Tag -->
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-kanto-orange-500">₱@CurrentDeal.SalePrice.ToString("F2")</span>
+                            <span class="text-sm font-semibold text-kanto-muted line-through">₱@CurrentDeal.OriginalPrice.ToString("F2")</span>
+                        </div>
+
+                        <!-- Included Bullet List -->
+                        <ul class="text-xs text-kanto-muted space-y-1 pt-1">
+                            @foreach (var inc in CurrentDeal.BundleIncludes)
+                            {
+                                <li class="flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-kanto-green-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>@inc</span>
+                                </li>
+                            }
+                        </ul>
+
+                        <!-- Real-time Live Ticking Clock (Matches inspo HRS, MINS, SECS) -->
+                        <div class="pt-3 border-t border-kanto-cream-200">
+                            <span class="text-[10px] uppercase font-bold text-kanto-muted tracking-wider block mb-1.5">
+                                Matatapos sa loob ng:
+                            </span>
+                            <div class="grid grid-cols-4 gap-2 text-center">
+                                <div class="bg-kanto-cream-100 rounded-lg p-2 border border-kanto-cream-300/50">
+                                    <span class="text-base font-black text-kanto-charcoal block">@_hours.ToString("D2")</span>
+                                    <span class="text-[9px] font-bold text-kanto-muted uppercase">HRS</span>
+                                </div>
+                                <div class="bg-kanto-cream-100 rounded-lg p-2 border border-kanto-cream-300/50">
+                                    <span class="text-base font-black text-kanto-charcoal block">@_mins.ToString("D2")</span>
+                                    <span class="text-[9px] font-bold text-kanto-muted uppercase">MINS</span>
+                                </div>
+                                <div class="bg-kanto-cream-100 rounded-lg p-2 border border-kanto-cream-300/50">
+                                    <span class="text-base font-black text-kanto-orange-500 block">@_secs.ToString("D2")</span>
+                                    <span class="text-[9px] font-bold text-kanto-muted uppercase">SECS</span>
+                                </div>
+                                <div class="bg-kanto-cream-100 rounded-lg p-2 border border-kanto-cream-300/50">
+                                    <span class="text-base font-black text-kanto-green-900 block">@_msec.ToString("D2")</span>
+                                    <span class="text-[9px] font-bold text-kanto-muted uppercase">MSEC</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    private DealOfTheDay? CurrentDeal;
+    private CancellationTokenSource? _cts;
+    private int _hours = 04;
+    private int _mins = 18;
+    private int _secs = 45;
+    private int _msec = 92;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentDeal = await DealService.GetCurrentDealAsync();
+        StartLiveCountdown();
+    }
+
+    private void StartLiveCountdown()
+    {
+        _cts = new CancellationTokenSource();
+        _ = PeriodicTimerLoop(_cts.Token);
+    }
+
+    private async Task PeriodicTimerLoop(CancellationToken token)
+    {
+        // 100ms precision loop for the countdown ticks
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+        while (!token.IsCancellationRequested && await timer.WaitForNextTickAsync(token))
+        {
+            if (_msec > 0)
+            {
+                _msec -= 10;
+            }
+            else
+            {
+                _msec = 90;
+                if (_secs > 0)
+                {
+                    _secs--;
+                }
+                else
+                {
+                    _secs = 59;
+                    if (_mins > 0)
+                    {
+                        _mins--;
+                    }
+                    else if (_hours > 0)
+                    {
+                        _hours--;
+                        _mins = 59;
+                    }
+                }
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void AddDealToBasket()
+    {
+        if (CurrentDeal == null) return;
+
+        var syntheticProduct = new ProductItem
+        {
+            Id = CurrentDeal.Id,
+            Name = CurrentDeal.Title,
+            Price = CurrentDeal.SalePrice,
+            OriginalPrice = CurrentDeal.OriginalPrice,
+            ImageUrl = CurrentDeal.ImageUrl,
+            VendorName = "Kanto Fiesta Central",
+            Category = ProductCategory.TusokTusok,
+            UnitDisplay = "1 full fiesta platter"
+        };
+
+        CartState.AddItem(syntheticProduct, 1, "Sweet & Spicy Mix");
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

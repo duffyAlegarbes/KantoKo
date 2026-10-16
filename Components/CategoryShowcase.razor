@@ -1,0 +1,79 @@
+@inject NavigationManager Nav
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" id="categories">
+    <div class="text-center mb-8">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-kanto-charcoal tracking-tight">
+            Pumili Ayon sa Kategorya
+        </h2>
+        <p class="text-sm text-kanto-muted mt-1">
+            Mula sa paboritong pampalipas-gutom hanggang sa ulam pampamilya
+        </p>
+    </div>
+
+    <!-- Category Grid with Direct Routes -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        @foreach (var cat in CategoryTiles)
+        {
+            <a href="@cat.RouteUrl"
+               class="group bg-white rounded-2xl p-4 border border-kanto-cream-200 shadow-soft-card hover:shadow-elevated transition-all duration-300 transform hover:-translate-y-1 block text-center">
+                
+                <!-- Accurate Category Image Frame -->
+                <div class="w-full aspect-square rounded-xl overflow-hidden bg-kanto-cream-100 mb-4 relative shadow-inner">
+                    <img src="@cat.ImageUrl" 
+                         alt="@cat.Title" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="absolute inset-0 bg-kanto-green-950/10 group-hover:bg-transparent transition-colors"></div>
+                </div>
+
+                <!-- Text & Action Link -->
+                <h3 class="font-bold text-sm sm:text-base text-kanto-charcoal group-hover:text-kanto-orange-500 transition-colors">
+                    @cat.Title
+                </h3>
+                
+                <span class="text-xs text-kanto-muted mt-1 flex items-center justify-center gap-1 font-semibold group-hover:text-kanto-orange-500 transition-colors">
+                    <span>Buksan ang Menu</span>
+                    <svg class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </span>
+            </a>
+        }
+    </div>
+</section>
+
+@code {
+    private class CategoryTileDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string RouteUrl { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
+    }
+
+    private List<CategoryTileDto> CategoryTiles = new()
+    {
+        new CategoryTileDto
+        {
+            Title = "Tusok-Tusok",
+            RouteUrl = "/tusok-tusok",
+            ImageUrl = "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=500&q=80" // Authentic fried quail eggs / street bites
+        },
+        new CategoryTileDto
+        {
+            Title = "Carinderia Ulam",
+            RouteUrl = "/carinderia",
+            ImageUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80" // Authentic savory pork bowl
+        },
+        new CategoryTileDto
+        {
+            Title = "Merienda & Palamig",
+            RouteUrl = "/merienda",
+            ImageUrl = "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=500&q=80" // Authentic crushed ice dessert / halo-halo style
+        },
+        new CategoryTileDto
+        {
+            Title = "Sari-Sari Store",
+            RouteUrl = "/sari-sari",
+            ImageUrl = "https://images.unsplash.com/photo-1584473457406-6240486418e9?auto=format&fit=crop&w=500&q=80" // Grocery goods / pantry shelf
+        }
+    };
+}

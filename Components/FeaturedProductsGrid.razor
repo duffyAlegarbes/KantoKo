@@ -1,0 +1,105 @@
+@inject IProductService ProductService
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" id="menu-explorer">
+    
+    <!-- Section Header (Matches the reference "New Arrivals" + "View All ->") -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-kanto-charcoal tracking-tight">
+                Bagong Luto &amp; Best Sellers
+            </h2>
+            <p class="text-sm text-kanto-muted mt-1">
+                Laging sariwa at bagong hango mula sa mga suking tindahan
+            </p>
+        </div>
+
+        <a href="#menu-explorer" class="text-sm font-bold text-kanto-orange-500 hover:text-kanto-orange-600 flex items-center gap-1 group">
+            <span>Tingnan Lahat</span>
+            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+        </a>
+    </div>
+
+    <!-- Category Filter Chips -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar text-xs font-bold">
+        <button @onclick="() => FilterByCategory(null)" 
+                class="px-4 py-2 rounded-full whitespace-nowrap transition-all @(SelectedCategory == null ? "bg-kanto-green-900 text-white shadow-sm" : "bg-white text-kanto-charcoal border border-kanto-cream-200 hover:bg-kanto-cream-100")">
+            Lahat ng Menu
+        </button>
+        <button @onclick="() => FilterByCategory(ProductCategory.TusokTusok)" 
+                class="px-4 py-2 rounded-full whitespace-nowrap transition-all @(SelectedCategory == ProductCategory.TusokTusok ? "bg-kanto-green-900 text-white shadow-sm" : "bg-white text-kanto-charcoal border border-kanto-cream-200 hover:bg-kanto-cream-100")">
+            Tusok-Tusok
+        </button>
+        <button @onclick="() => FilterByCategory(ProductCategory.CarinderiaUlam)" 
+                class="px-4 py-2 rounded-full whitespace-nowrap transition-all @(SelectedCategory == ProductCategory.CarinderiaUlam ? "bg-kanto-green-900 text-white shadow-sm" : "bg-white text-kanto-charcoal border border-kanto-cream-200 hover:bg-kanto-cream-100")">
+            Carinderia Ulam
+        </button>
+        <button @onclick="() => FilterByCategory(ProductCategory.MeriendaPalamig)" 
+                class="px-4 py-2 rounded-full whitespace-nowrap transition-all @(SelectedCategory == ProductCategory.MeriendaPalamig ? "bg-kanto-green-900 text-white shadow-sm" : "bg-white text-kanto-charcoal border border-kanto-cream-200 hover:bg-kanto-cream-100")">
+            Merienda &amp; Palamig
+        </button>
+        <button @onclick="() => FilterByCategory(ProductCategory.SariSariDaily)" 
+                class="px-4 py-2 rounded-full whitespace-nowrap transition-all @(SelectedCategory == ProductCategory.SariSariDaily ? "bg-kanto-green-900 text-white shadow-sm" : "bg-white text-kanto-charcoal border border-kanto-cream-200 hover:bg-kanto-cream-100")">
+            Sari-Sari Pantry
+        </button>
+    </div>
+
+    <!-- 4-Column Responsive Grid (Matches New Arrivals 4-column layout) -->
+    @if (DisplayedProducts == null)
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="bg-white rounded-2xl p-4 border border-kanto-cream-200 animate-pulse space-y-4">
+                    <div class="w-full aspect-square bg-kanto-cream-200 rounded-xl"></div>
+                    <div class="h-4 bg-kanto-cream-200 rounded w-3/4"></div>
+                    <div class="h-3 bg-kanto-cream-200 rounded w-1/2"></div>
+                </div>
+            }
+        </div>
+    }
+    else if (!DisplayedProducts.Any())
+    {
+        <div class="bg-white rounded-2xl p-12 text-center border border-kanto-cream-200">
+            <p class="text-kanto-muted text-sm font-semibold">Walang nahanap na paninda sa kategoryang ito.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach (var prod in DisplayedProducts)
+            {
+                <ProductCard Product="@prod" />
+            }
+        </div>
+    }
+
+</section>
+
+@code {
+    private List<ProductItem>? AllProducts;
+    private List<ProductItem>? DisplayedProducts;
+    private ProductCategory? SelectedCategory = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllProducts = await ProductService.GetFeaturedProductsAsync();
+        DisplayedProducts = AllProducts;
+    }
+
+    public void FilterByCategory(ProductCategory? category)
+    {
+        SelectedCategory = category;
+        if (AllProducts == null) return;
+
+        if (category == null)
+        {
+            DisplayedProducts = AllProducts;
+        }
+        else
+        {
+            DisplayedProducts = AllProducts.Where(p => p.Category == category.Value).ToList();
+        }
+    }
+}
