@@ -1,0 +1,76 @@
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="suki-club">
+    <div class="bg-kanto-green-950 rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-kanto-green-800 relative overflow-hidden shadow-elevated">
+        
+        <!-- Ambient Background Glow -->
+        <div class="absolute -right-16 -top-16 w-64 h-64 bg-kanto-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+            
+            <!-- Left Side: Icon & Copy -->
+            <div class="flex items-center gap-4 text-left w-full lg:w-auto">
+                <div class="w-14 h-14 rounded-2xl bg-kanto-orange-500/20 border border-kanto-orange-500/30 text-kanto-orange-400 flex items-center justify-center shrink-0">
+                    <!-- Envelope with Gift Tag Icon -->
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+
+                <div>
+                    <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight">
+                        Sumali sa Kanto Suki Club
+                    </h3>
+                    <p class="text-xs sm:text-sm text-kanto-cream-200 mt-0.5">
+                        Mag-subscribe ngayon at makakuha ng <strong class="text-kanto-orange-400 font-bold">10% OFF voucher</strong> sa iyong susunod na merienda!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Side: Email Input Strip or Claimed State -->
+            <div class="w-full lg:w-auto lg:min-w-[420px]">
+                @if (_isSubscribed)
+                {
+                    <div class="bg-kanto-green-900 border border-kanto-green-700 p-3.5 rounded-xl text-center text-xs text-kanto-cream-100 flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <span class="text-kanto-orange-400 font-bold text-sm">✓ Suki Ka Na!</span> 
+                            Gamitin ang code: <strong class="font-mono bg-kanto-orange-500 px-2 py-0.5 rounded text-white font-bold">SUKI50</strong>
+                        </span>
+                        <button @onclick="() => _isSubscribed = false" class="text-kanto-cream-300 hover:text-white underline text-[10px]">
+                            Reset
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <form @onsubmit="HandleSubscribe" class="flex flex-col sm:flex-row gap-2">
+                        <input type="email" 
+                               required
+                               @bind="_email"
+                               placeholder="Ilagay ang iyong email address..." 
+                               class="flex-1 text-xs px-4 py-3.5 bg-white text-kanto-charcoal rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-kanto-orange-500" />
+                        <button type="submit" 
+                                class="bg-kanto-orange-500 hover:bg-kanto-orange-600 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-md shadow-kanto-orange-500/20 transition-all shrink-0">
+                            SUBSCRIBE
+                        </button>
+                    </form>
+                }
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+@code {
+    private string _email = string.Empty;
+    private bool _isSubscribed = false;
+
+    private void HandleSubscribe()
+    {
+        if (!string.IsNullOrWhiteSpace(_email) && _email.Contains("@"))
+        {
+            _isSubscribed = true;
+            _email = string.Empty;
+        }
+    }
+}
