@@ -1,0 +1,230 @@
+@inject CartStateService CartState
+@implements IDisposable
+
+<!-- Backdrop Overlay -->
+@if (CartState.IsCartOpen)
+{
+    <div class="fixed inset-0 bg-kanto-green-950/60 backdrop-blur-sm z-50 transition-opacity duration-300"
+         @onclick="CartState.CloseCart"></div>
+}
+
+<!-- Slide-out Drawer Panel -->
+<div class="fixed inset-y-0 right-0 max-w-full flex z-50 pointer-events-none">
+    <div class="w-screen max-w-md pointer-events-auto transform transition-transform duration-300 ease-in-out bg-white shadow-2xl flex flex-col @(CartState.IsCartOpen ? "translate-x-0" : "translate-x-full")">
+        
+        <!-- Drawer Header -->
+        <div class="p-5 border-b border-kanto-cream-200 bg-kanto-cream-50 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-kanto-orange-500/10 text-kanto-orange-500 flex items-center justify-center font-bold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-kanto-charcoal">Iyong Kanto Basket</h3>
+                    <span class="text-xs text-kanto-muted font-medium">@CartState.TotalItemCount mga paninda</span>
+                </div>
+            </div>
+
+            <button @onclick="CartState.CloseCart" 
+                    class="p-2 rounded-lg text-kanto-muted hover:text-kanto-charcoal hover:bg-kanto-cream-200/60 transition-colors"
+                    aria-label="Close cart">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Free Delivery Progress Meter -->
+        <div class="bg-kanto-green-900 text-white px-5 py-3 text-xs">
+            @if (CartState.Subtotal >= CartStateService.FreeDeliveryThreshold)
+            {
+                <div class="flex items-center gap-2 font-bold text-kanto-orange-400">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Yehey! Pasok ka na sa LIBRENG HATID!</span>
+                </div>
+            }
+            else
+            {
+                <div class="flex justify-between items-center mb-1">
+                    <span>Dagdag <strong>₱@CartState.AmountNeededForFreeDelivery.ToString("F2")</strong> for Free Hatid</span>
+                    <span class="text-kanto-orange-400 font-bold">@((int)((CartState.Subtotal / CartStateService.FreeDeliveryThreshold) * 100))%</span>
+                </div>
+                <div class="w-full bg-kanto-green-950 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-kanto-orange-500 h-full rounded-full transition-all duration-300"
+                         style="width: @((CartState.Subtotal / CartStateService.FreeDeliveryThreshold) * 100)%"></div>
+                </div>
+            }
+        </div>
+
+        <!-- Scrollable Item List -->
+        <div class="flex-1 overflow-y-auto p-5 space-y-4">
+            @if (!CartState.Items.Any())
+            {
+                <div class="h-full flex flex-col items-center justify-center text-center p-6 text-kanto-muted">
+                    <div class="w-20 h-20 rounded-full bg-kanto-cream-100 flex items-center justify-center text-kanto-muted mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <h4 class="font-extrabold text-base text-kanto-charcoal">Walang laman ang basket mo, Suki!</h4>
+                    <p class="text-xs text-kanto-muted mt-1 max-w-xs">
+                        Pumili mula sa aming tusok-tusok, carinderia meals, o sari-sari essentials.
+                    </p>
+                    <button @onclick="CartState.CloseCart" 
+                            class="mt-5 bg-kanto-orange-500 hover:bg-kanto-orange-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all">
+                        TUMINGIN NG MENU
+                    </button>
+                </div>
+            }
+            else
+            {
+                @foreach (var item in CartState.Items)
+                {
+                    <div class="flex gap-3 bg-kanto-cream-50/60 p-3 rounded-2xl border border-kanto-cream-200">
+                        <!-- Food Thumbnail -->
+                        <img src="@item.Product.ImageUrl" 
+                             alt="@item.Product.Name" 
+                             class="w-18 h-18 w-20 h-20 object-cover rounded-xl shrink-0" />
+
+                        <!-- Details -->
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start gap-1">
+                                    <h4 class="font-bold text-sm text-kanto-charcoal leading-snug">@item.Product.Name</h4>
+                                    <button @onclick="() => CartState.RemoveItem(item.Id)" 
+                                            class="text-kanto-muted hover:text-red-500 transition-colors p-1"
+                                            title="Alisin">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <span class="text-[11px] text-kanto-muted">@item.Product.VendorName</span>
+
+                                <!-- Condiment / Sauce Selector -->
+                                @if (item.Product.AvailableSauces.Any())
+                                {
+                                    <div class="mt-1.5 flex items-center gap-1.5">
+                                        <span class="text-[10px] font-bold text-kanto-charcoal">Sawsawan:</span>
+                                        <select value="@item.SelectedSauce" 
+                                                @onchange="(e) => CartState.UpdateSauce(item.Id, e.Value?.ToString() ?? string.Empty)"
+                                                class="text-[11px] bg-white border border-kanto-cream-300 rounded px-1.5 py-0.5 text-kanto-charcoal focus:outline-none focus:border-kanto-orange-500">
+                                            @foreach (var sauce in item.Product.AvailableSauces)
+                                            {
+                                                <option value="@sauce">@sauce</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Bottom Price & Quantity Stepper -->
+                            <div class="flex items-center justify-between mt-2 pt-2 border-t border-kanto-cream-200/60">
+                                <span class="font-black text-sm text-kanto-charcoal">
+                                    ₱@item.Subtotal.ToString("F2")
+                                </span>
+
+                                <div class="flex items-center gap-2 bg-white rounded-lg border border-kanto-cream-300 px-2 py-0.5 shadow-sm">
+                                    <button @onclick="() => CartState.UpdateQuantity(item.Id, item.Quantity - 1)" 
+                                            class="text-kanto-charcoal hover:text-kanto-orange-500 font-bold px-1 transition-colors">-</button>
+                                    <span class="text-xs font-bold w-4 text-center">@item.Quantity</span>
+                                    <button @onclick="() => CartState.UpdateQuantity(item.Id, item.Quantity + 1)" 
+                                            class="text-kanto-charcoal hover:text-kanto-orange-500 font-bold px-1 transition-colors">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Drawer Footer: Voucher, Totals & Checkout -->
+        @if (CartState.Items.Any())
+        {
+            <div class="p-5 border-t border-kanto-cream-200 bg-kanto-cream-50/50 space-y-4">
+                
+                <!-- Voucher Input -->
+                <div class="flex gap-2">
+                    <input type="text" 
+                           placeholder="Voucher code (e.g. KANTO10)" 
+                           @bind="_voucherInput"
+                           class="flex-1 text-xs uppercase px-3 py-2 bg-white border border-kanto-cream-300 rounded-xl focus:outline-none focus:border-kanto-orange-500" />
+                    <button @onclick="ApplyVoucherCode"
+                            class="bg-kanto-green-900 hover:bg-kanto-green-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition-colors">
+                        Apply
+                    </button>
+                </div>
+                @if (!string.IsNullOrEmpty(CartState.AppliedVoucherCode))
+                {
+                    <div class="flex items-center justify-between text-xs bg-kanto-orange-50 text-kanto-orange-600 px-3 py-1.5 rounded-lg border border-kanto-orange-100">
+                        <span>Code <strong>@CartState.AppliedVoucherCode</strong> applied (-10%)</span>
+                        <button @onclick="CartState.RemoveVoucher" class="underline font-bold text-[10px]">Alisin</button>
+                    </div>
+                }
+
+                <!-- Subtotals -->
+                <div class="space-y-1.5 text-xs text-kanto-muted">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span class="font-bold text-kanto-charcoal">₱@CartState.Subtotal.ToString("F2")</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Delivery Fee (Hatid)</span>
+                        <span class="font-bold text-kanto-charcoal">
+                            @(CartState.DeliveryFee == 0 ? "LIBRE" : $"₱{CartState.DeliveryFee:F2}")
+                        </span>
+                    </div>
+                    @if (CartState.DiscountAmount > 0)
+                    {
+                        <div class="flex justify-between text-kanto-orange-600 font-bold">
+                            <span>Suki Discount</span>
+                            <span>-₱@CartState.DiscountAmount.ToString("F2")</span>
+                        </div>
+                    }
+                    <div class="flex justify-between text-base font-black text-kanto-charcoal pt-2 border-t border-kanto-cream-200">
+                        <span>Total na Bayarin</span>
+                        <span class="text-kanto-orange-500">₱@CartState.GrandTotal.ToString("F2")</span>
+                    </div>
+                </div>
+
+                <!-- Checkout Trigger Button -->
+                <button @onclick="CartState.OpenCheckout"
+                        class="w-full bg-kanto-orange-500 hover:bg-kanto-orange-600 text-white font-extrabold text-sm py-3.5 rounded-xl shadow-lg shadow-kanto-orange-500/30 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                    <span>IPROSESO ANG ORDER</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </button>
+
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+    private string _voucherInput = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+    }
+
+    private void ApplyVoucherCode()
+    {
+        if (CartState.ApplyVoucher(_voucherInput))
+        {
+            _voucherInput = string.Empty;
+        }
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}

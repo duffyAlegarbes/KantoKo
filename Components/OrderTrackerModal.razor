@@ -1,0 +1,102 @@
+@inject CartStateService CartState
+@implements IDisposable
+
+@if (CartState.IsTrackerOpen)
+{
+    <div class="fixed inset-0 bg-kanto-green-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-kanto-cream-200 overflow-hidden">
+            
+            <!-- Success Top Banner -->
+            <div class="bg-kanto-green-900 text-white p-6 text-center relative">
+                <div class="w-14 h-14 bg-kanto-orange-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg shadow-kanto-orange-500/30">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-extrabold tracking-tight">Order Confirmed, Suki!</h3>
+                <p class="text-xs text-kanto-cream-200 mt-1">Order #KC-@_orderNumber • Estimated Hatid: 15 mins</p>
+            </div>
+
+            <!-- Live Status Stepper -->
+            <div class="p-6 space-y-6">
+                
+                <div class="space-y-4">
+                    <!-- Step 1 -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-full bg-kanto-green-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                            ✓
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-bold text-kanto-charcoal">Natanggap na ng Tindahan</h5>
+                            <span class="text-[10px] text-kanto-muted">Inihahanda na ni Manong Jun</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-full bg-kanto-orange-500 text-white flex items-center justify-center text-xs font-bold shrink-0 animate-pulse">
+                            2
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-bold text-kanto-orange-600">Kasalukuyang Niluluto / Iniihaw</h5>
+                            <span class="text-[10px] text-kanto-muted">Mainit at bagong hango</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex items-center gap-3 opacity-60">
+                        <div class="w-7 h-7 rounded-full bg-kanto-cream-300 text-kanto-muted flex items-center justify-center text-xs font-bold shrink-0">
+                            3
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-bold text-kanto-charcoal">On the Way si Kuya Rider</h5>
+                            <span class="text-[10px] text-kanto-muted">Papunta na sa inyong barangay</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kuya Rider Card -->
+                <div class="bg-kanto-cream-100 p-4 rounded-2xl border border-kanto-cream-200 flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-full bg-kanto-green-900 text-kanto-orange-400 flex items-center justify-center font-black text-sm shrink-0">
+                        KR
+                    </div>
+                    <div class="flex-1">
+                        <h5 class="text-xs font-bold text-kanto-charcoal">Kuya Jun-Jun (Delivery Partner)</h5>
+                        <p class="text-[10px] text-kanto-muted">Honda Wave 110 • Plate: 2468-KC</p>
+                    </div>
+                    <span class="text-xs font-bold text-kanto-green-900 bg-white px-2.5 py-1 rounded-lg border border-kanto-cream-300">
+                        ★ 4.95
+                    </span>
+                </div>
+
+                <!-- Done / Reset Button -->
+                <button @onclick="FinishOrder"
+                        class="w-full bg-kanto-green-900 hover:bg-kanto-green-800 text-white font-extrabold text-sm py-3.5 rounded-2xl shadow transition-colors">
+                    TAPOS NA / BALIK SA HOME
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    private int _orderNumber = new Random().Next(10000, 99999);
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+    }
+
+    private void FinishOrder()
+    {
+        CartState.ClearCart();
+        CartState.CloseTracker();
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}

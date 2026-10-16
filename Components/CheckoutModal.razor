@@ -1,0 +1,137 @@
+@inject CartStateService CartState
+@implements IDisposable
+
+@if (CartState.IsCheckoutOpen)
+{
+    <!-- Modal Backdrop -->
+    <div class="fixed inset-0 bg-kanto-green-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        
+        <!-- Modal Card -->
+        <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-kanto-cream-200">
+            
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-kanto-cream-200 bg-kanto-cream-50 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-extrabold text-kanto-charcoal">Delivery &amp; Bayad</h3>
+                    <p class="text-xs text-kanto-muted mt-0.5">Kumpletuhin ang detalye para ma-ihaw at maihatid agad</p>
+                </div>
+                <button @onclick="CartState.CloseCheckout" class="p-1.5 rounded-lg text-kanto-muted hover:text-kanto-charcoal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Form Content -->
+            <div class="p-6 space-y-5 text-left">
+                
+                <!-- Customer Details -->
+                <div class="space-y-3">
+                    <label class="block text-xs font-black uppercase tracking-wider text-kanto-charcoal">Detalye ng Nag-order</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <span class="text-[11px] text-kanto-muted font-bold block mb-1">Pangalan</span>
+                            <input type="text" @bind="_name" placeholder="Juan Dela Cruz"
+                                   class="w-full text-xs px-3 py-2.5 rounded-xl border border-kanto-cream-300 focus:outline-none focus:border-kanto-orange-500 bg-kanto-cream-50/40" />
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-kanto-muted font-bold block mb-1">Mobile Number</span>
+                            <input type="tel" @bind="_phone" placeholder="0917 123 4567"
+                                   class="w-full text-xs px-3 py-2.5 rounded-xl border border-kanto-cream-300 focus:outline-none focus:border-kanto-orange-500 bg-kanto-cream-50/40" />
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[11px] text-kanto-muted font-bold block mb-1">Tirahan / Landmark</span>
+                        <input type="text" @bind="_address" placeholder="House #, Street, Tapat ng Tindahan ni Aling Nena"
+                               class="w-full text-xs px-3 py-2.5 rounded-xl border border-kanto-cream-300 focus:outline-none focus:border-kanto-orange-500 bg-kanto-cream-50/40" />
+                    </div>
+                </div>
+
+                <!-- Payment Method Selector -->
+                <div class="space-y-2 pt-2 border-t border-kanto-cream-200">
+                    <label class="block text-xs font-black uppercase tracking-wider text-kanto-charcoal">Paraan ng Pagbayad</label>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <!-- GCash Option -->
+                        <div @onclick="@(() => _paymentMethod = "GCash")"
+                             class="p-3 rounded-2xl border cursor-pointer transition-all flex flex-col items-center text-center @(_paymentMethod == "GCash" ? "border-kanto-orange-500 bg-kanto-orange-50/50 shadow-sm" : "border-kanto-cream-200 hover:bg-kanto-cream-50")">
+                            <span class="font-extrabold text-blue-600 text-sm">GCash</span>
+                            <span class="text-[10px] text-kanto-muted mt-0.5">Instant App Pay</span>
+                        </div>
+
+                        <!-- Maya Option -->
+                        <div @onclick="@(() => _paymentMethod = "Maya")"
+                             class="p-3 rounded-2xl border cursor-pointer transition-all flex flex-col items-center text-center @(_paymentMethod == "Maya" ? "border-kanto-orange-500 bg-kanto-orange-50/50 shadow-sm" : "border-kanto-cream-200 hover:bg-kanto-cream-50")">
+                            <span class="font-extrabold text-green-600 text-sm">Maya</span>
+                            <span class="text-[10px] text-kanto-muted mt-0.5">Wallet / Card</span>
+                        </div>
+
+                        <!-- COD Option -->
+                        <div @onclick="@(() => _paymentMethod = "COD")"
+                             class="p-3 rounded-2xl border cursor-pointer transition-all flex flex-col items-center text-center @(_paymentMethod == "COD" ? "border-kanto-orange-500 bg-kanto-orange-50/50 shadow-sm" : "border-kanto-cream-200 hover:bg-kanto-cream-50")">
+                            <span class="font-extrabold text-kanto-charcoal text-sm">COD</span>
+                            <span class="text-[10px] text-kanto-muted mt-0.5">Barya</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Line -->
+                <div class="bg-kanto-cream-100 p-4 rounded-2xl border border-kanto-cream-300/60 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-kanto-muted block">Kabuuang Babayaran:</span>
+                        <span class="text-xl font-black text-kanto-green-900">₱@CartState.GrandTotal.ToString("F2")</span>
+                    </div>
+                    <span class="text-xs font-bold text-kanto-orange-600 bg-kanto-orange-100/60 px-3 py-1 rounded-lg">
+                        @_paymentMethod
+                    </span>
+                </div>
+
+                <!-- Place Order Button -->
+                <button @onclick="ProcessOrder"
+                        disabled="@_isProcessing"
+                        class="w-full bg-kanto-orange-500 hover:bg-kanto-orange-600 text-white font-extrabold text-sm py-4 rounded-2xl shadow-lg shadow-kanto-orange-500/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                    @if (_isProcessing)
+                    {
+                        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Ipinapadala sa Tindahan...</span>
+                    }
+                    else
+                    {
+                        <span>KUMPIRMAHIN ANG ORDER</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    }
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    private string _name = "Juan Dela Cruz";
+    private string _phone = "0917 890 1234";
+    private string _address = "Blk 4 Lot 12, Avocado St., Brgy. San Antonio";
+    private string _paymentMethod = "GCash";
+    private bool _isProcessing = false;
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += StateHasChanged;
+    }
+
+    private async Task ProcessOrder()
+    {
+        _isProcessing = true;
+        await Task.Delay(1200); // Simulated API latency
+        _isProcessing = false;
+        CartState.OpenTracker();
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= StateHasChanged;
+    }
+}
