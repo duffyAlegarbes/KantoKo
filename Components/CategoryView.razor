@@ -1,0 +1,139 @@
+@inject IProductService ProductService
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- Breadcrumb Bar -->
+    <nav class="flex items-center gap-2 text-xs font-semibold text-kanto-muted mb-6">
+        <a href="/" class="hover:text-kanto-orange-500 transition-colors">Home</a>
+        <span>/</span>
+        <span class="text-kanto-charcoal">Mga Kategorya</span>
+        <span>/</span>
+        <span class="text-kanto-orange-500 font-bold">@CategoryTitle</span>
+    </nav>
+
+    <!-- Category Header Hero Card -->
+    <div class="relative bg-kanto-green-900 rounded-3xl p-8 sm:p-12 overflow-hidden shadow-elevated border border-kanto-green-800 mb-10 text-white">
+        <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-kanto-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            
+            <div class="md:col-span-8 space-y-3">
+                <span class="inline-block bg-kanto-orange-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+                    @CategoryBadge
+                </span>
+                
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+                    @CategoryTitle
+                </h1>
+                
+                <p class="text-kanto-cream-200 text-sm sm:text-base max-w-xl font-normal leading-relaxed">
+                    @CategoryDescription
+                </p>
+
+                <!-- Active Suki Vendor Pill -->
+                <div class="pt-2 flex items-center gap-2 text-xs text-kanto-cream-100 font-medium">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Inihahanda mula sa <strong>@VendorName</strong></span>
+                </div>
+            </div>
+
+            <!-- Category Hero Artwork -->
+            <div class="md:col-span-4 flex justify-center md:justify-end">
+                <div class="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden bg-kanto-green-950 p-2 border border-kanto-green-700 shadow-xl">
+                    <img src="@CategoryHeroImg" 
+                         alt="@CategoryTitle" 
+                         class="w-full h-full object-cover rounded-xl" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toolbar: Search & Quick Sort -->
+    <div class="bg-white p-4 rounded-2xl border border-kanto-cream-200 shadow-soft-card mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        
+        <!-- Search Input -->
+        <div class="relative w-full sm:w-80">
+            <svg class="w-4 h-4 text-kanto-muted absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" 
+                   @bind="_searchQuery" 
+                   @bind:event="oninput"
+                   placeholder="Maghanap sa @CategoryTitle..." 
+                   class="w-full text-xs pl-10 pr-4 py-2.5 bg-kanto-cream-100/60 border border-kanto-cream-300 rounded-xl focus:outline-none focus:border-kanto-orange-500" />
+        </div>
+
+        <!-- Count & Sort -->
+        <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 text-xs">
+            <span class="text-kanto-muted font-bold">
+                May <strong>@FilteredProducts.Count</strong> paninda
+            </span>
+
+            <select @bind="_sortOrder" class="bg-kanto-cream-100/60 border border-kanto-cream-300 rounded-xl px-3 py-2 text-kanto-charcoal font-semibold text-xs focus:outline-none">
+                <option value="featured">Paborito ng Lahat</option>
+                <option value="price-asc">Presyo: Mababa muna</option>
+                <option value="price-desc">Presyo: Mataas muna</option>
+            </select>
+        </div>
+
+    </div>
+
+    <!-- Products Grid -->
+    @if (!FilteredProducts.Any())
+    {
+        <div class="bg-white rounded-3xl p-16 text-center border border-kanto-cream-200 shadow-soft-card">
+            <h3 class="font-extrabold text-base text-kanto-charcoal">Walang paninda na tumugma</h3>
+            <p class="text-xs text-kanto-muted mt-1">Subukang baguhin ang iyong search keyword.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach (var prod in FilteredProducts)
+            {
+                <ProductCard Product="@prod" />
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ProductCategory Category { get; set; }
+    [Parameter, EditorRequired] public string CategoryTitle { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string CategoryBadge { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string CategoryDescription { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string CategoryHeroImg { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string VendorName { get; set; } = string.Empty;
+
+    private List<ProductItem> Products = new();
+    private string _searchQuery = "";
+    private string _sortOrder = "featured";
+
+    private List<ProductItem> FilteredProducts
+    {
+        get
+        {
+            var list = Products.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                list = list.Where(p => p.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                                       p.Description.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return _sortOrder switch
+            {
+                "price-asc" => list.OrderBy(p => p.Price).ToList(),
+                "price-desc" => list.OrderByDescending(p => p.Price).ToList(),
+                _ => list.ToList()
+            };
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Products = await ProductService.GetProductsByCategoryAsync(Category);
+    }
+}
